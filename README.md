@@ -42,36 +42,10 @@ Your current rules allow anyone to read/write data. **This is dangerous!**
 
 **Replace your current rules with this secure version:**
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow anyone to read student data (for search functionality)
-    match /students/{studentId} {
-      allow read: if true;
-      // Only allow writes if the document ID matches the roll number in the data
-      allow write: if resource == null ||
-                   (request.auth != null && request.auth.uid == studentId) ||
-                   (request.resource.data.keys().hasAny(['Roll']) &&
-                    request.resource.data.Roll == studentId);
-    }
-  }
-}
+``
 ```
 
 **🔧 TEMPORARY TESTING RULES (Use this first to test if Firebase works):**
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /students/{studentId} {
-      allow read: if true;
-      allow write: if true;
-    }
-  }
-}
-```
 
 ⚠️ **Use the testing rules temporarily, then switch to secure ones after confirming Firebase works**
 
