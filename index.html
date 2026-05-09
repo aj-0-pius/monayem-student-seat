@@ -11,6 +11,10 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -43,7 +47,7 @@
             color: #64748b !important;
             cursor: not-allowed !important;
             border-color: #e2e8f0 !important;
-            opacity: 1 !important; /* Fix for disabled select opacity in some browsers */
+            opacity: 1 !important; 
         }
 
         /* Floating Button Animation */
@@ -90,7 +94,7 @@
             <button onclick="switchTab('admin')" id="tab-admin" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 active:scale-95 select-none">Admin Panel</button>
         </nav>
 
-        <!-- Student Portal -->
+        <!-- Student Portal Section -->
         <section id="section-student" class="space-y-6">
             <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 p-6 md:p-12 border border-slate-100 mobile-card">
                 <div class="text-center mb-8 md:mb-12">
@@ -112,7 +116,6 @@
                     </button>
                 </div>
 
-                <!-- Profile Form -->
                 <div id="studentForm" class="hidden space-y-10 animate-in slide-in-from-bottom-4 duration-500">
                     <div class="flex justify-between items-center px-2">
                         <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Verification Status</h3>
@@ -154,7 +157,6 @@
                                 <button type="button" onclick="openSeatModal()" class="absolute right-3 top-3 bg-blue-100 text-blue-600 p-2 rounded-xl active:scale-90 transition-all z-10">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                                 </button>
-                                <!-- Custom Dropdown Arrow -->
                                 <div class="absolute right-12 top-0 h-full flex items-center pointer-events-none pr-2">
                                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
@@ -162,7 +164,7 @@
                             <p id="msg-seat" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
                         </div>
                         <div class="md:col-span-2 space-y-2">
-                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Address (বাংলা)</label>
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Address (Bangla)</label>
                             <input type="text" id="f-address" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold" placeholder="গ্রাম, উপজেলা, জেলা">
                             <p id="msg-address" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
                         </div>
@@ -198,7 +200,7 @@
             </div>
         </section>
 
-        <!-- Admin Panel -->
+        <!-- Admin Panel Section -->
         <section id="section-admin" class="hidden">
             <div class="bg-white rounded-[2.5rem] shadow-xl p-6 md:p-12 border border-slate-100 mobile-card">
                 <div id="admin-auth" class="max-w-md mx-auto space-y-6">
@@ -224,11 +226,16 @@
                             </label>
                         </div>
                         <div class="p-8 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm text-center">
-                            <h3 class="font-black text-emerald-900 mb-2 text-xs uppercase tracking-[0.2em]">Export Center</h3>
-                            <p class="text-xs text-emerald-600 mb-6 font-medium">Generate a detailed report with all current updates.</p>
-                            <button onclick="exportExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 transition-all active:scale-95 select-none">
-                                Download Updated Data
-                            </button>
+                            <h3 class="font-black text-emerald-900 mb-2 text-xs uppercase tracking-[0.2em]">Reports & Exports</h3>
+                            <p class="text-xs text-emerald-600 mb-6 font-medium">Download database snapshots or pending lists.</p>
+                            <div class="flex flex-col gap-3">
+                                <button onclick="exportExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 transition-all active:scale-95 select-none">
+                                    Download Full Excel
+                                </button>
+                                <button onclick="exportPendingPDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-red-100 transition-all active:scale-95 select-none">
+                                    Download Pending List (PDF)
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -259,16 +266,14 @@
             </div>
         </section>
 
-        <!-- Countdown Timer Section -->
+        <!-- Countdown Timer -->
         <footer class="mt-10 mb-20 text-center px-2">
             <div class="bg-slate-900 text-white rounded-3xl p-5 shadow-2xl relative overflow-hidden border border-slate-800 max-w-lg mx-auto">
                 <div class="absolute -top-10 -right-10 w-24 h-24 bg-red-600/10 rounded-full blur-2xl animate-pulse"></div>
-                
                 <h3 class="text-[9px] font-black uppercase tracking-[0.25em] text-red-500 mb-4 flex items-center justify-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>
                     Submission Deadline
                 </h3>
-                
                 <div id="timerDisplay" class="flex justify-center gap-3 md:gap-4">
                     <div class="timer-group">
                         <div id="days" class="timer-tile text-xl md:text-2xl font-black">00</div>
@@ -287,15 +292,9 @@
                         <div class="text-[7px] font-black uppercase tracking-widest mt-1.5 text-slate-500">Sec</div>
                     </div>
                 </div>
-                
-                <p class="text-slate-500 text-[8px] font-bold mt-4 uppercase tracking-[0.2em]">
-                    Verification Closes in 30 Hours
-                </p>
+                <p class="text-slate-500 text-[8px] font-bold mt-4 uppercase tracking-[0.2em]">Verification Closes in 30 Hours</p>
             </div>
-            
-            <p class="mt-6 text-slate-400 text-[9px] font-bold uppercase tracking-widest opacity-60">
-                © 2026 Shaheed Monayem Hostel
-            </p>
+            <p class="mt-6 text-slate-400 text-[9px] font-bold uppercase tracking-widest opacity-60">© 2026 Shaheed Monayem Hostel</p>
         </footer>
     </div>
 
@@ -311,26 +310,21 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200" onclick="event.stopPropagation()">
             <div class="p-8 text-center">
                 <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
                 <h2 class="text-2xl font-black text-slate-800 mb-2">Need Help?</h2>
                 <p class="text-slate-500 mb-6 text-sm px-4 leading-relaxed">For any corrections or technical support, please use the following methods:</p>
-                
                 <div class="space-y-3 mb-8">
-                    <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 group">
+                    <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
                         <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Admin Location</span>
                         <p class="text-lg font-black text-slate-800">৩০৭ রুমে এসে যোগাযোগ কর</p>
                     </div>
-
                     <button onclick="window.open('https://www.facebook.com/minhajulabadinpius', '_blank')" class="w-full flex items-center justify-center gap-3 bg-[#1877F2] text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-blue-200">
                         <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                         Message Admin
                     </button>
                 </div>
-                
-                <button onclick="closeContactModal()" class="w-full text-slate-400 py-2 font-black text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-all">
-                    Dismiss
-                </button>
+                <button onclick="closeContactModal()" class="w-full text-slate-400 py-2 font-black text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-all">Dismiss</button>
             </div>
         </div>
     </div>
@@ -384,35 +378,29 @@
         function updateCountdown() {
             const now = new Date().getTime();
             const t = deadline - now;
-
             if (t < 0) {
                 const display = document.getElementById("timerDisplay");
                 if (display) display.innerHTML = "<div class='text-red-500 font-black uppercase tracking-[0.2em] text-xs'>Submission Closed</div>";
                 return;
             }
-
             const d = Math.floor(t / (1000 * 60 * 60 * 24));
             const h = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const m = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((t % (1000 * 60)) / 1000);
-
-            const daysEl = document.getElementById("days");
-            const hoursEl = document.getElementById("hours");
-            const minsEl = document.getElementById("minutes");
-            const secsEl = document.getElementById("seconds");
-
-            if (daysEl) daysEl.innerText = d.toString().padStart(2, '0');
-            if (hoursEl) hoursEl.innerText = h.toString().padStart(2, '0');
-            if (minsEl) minsEl.innerText = m.toString().padStart(2, '0');
-            if (secsEl) secsEl.innerText = s.toString().padStart(2, '0');
+            const dEl = document.getElementById("days");
+            const hEl = document.getElementById("hours");
+            const mEl = document.getElementById("minutes");
+            const sEl = document.getElementById("seconds");
+            if (dEl) dEl.innerText = d.toString().padStart(2, '0');
+            if (hEl) hEl.innerText = h.toString().padStart(2, '0');
+            if (mEl) mEl.innerText = m.toString().padStart(2, '0');
+            if (sEl) sEl.innerText = s.toString().padStart(2, '0');
         }
-
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
         window.onload = async () => {
             updateFirebaseStatus('connecting', 'Cloud Handshake');
-            
             const startAuth = async () => {
                 try {
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -425,9 +413,7 @@
                     updateFirebaseStatus('error', 'Auth Blocked');
                 }
             };
-
             await startAuth();
-
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     updateFirebaseStatus('connecting', 'Synchronizing');
@@ -440,7 +426,6 @@
 
         async function loadAndMergeData() {
             if (!auth.currentUser) return;
-
             try {
                 let masterData = [];
                 try {
@@ -450,17 +435,13 @@
                         const workbook = XLSX.read(buffer, { type: 'array' });
                         masterData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     }
-                } catch (e) {
-                    console.warn("Static master file not found.");
-                }
+                } catch (e) { console.warn("Master file not found."); }
 
                 let cloudUpdates = {};
                 try {
                     const snap = await getDocs(collection(db, ...collectionPath));
                     snap.forEach(d => { cloudUpdates[d.id] = d.data(); });
-                } catch (err) {
-                    console.error("Cloud Access Error:", err);
-                }
+                } catch (err) { console.error("Cloud Access Error:", err); }
 
                 const registry = new Map();
                 masterData.forEach(row => {
@@ -500,7 +481,6 @@
         window.searchStudent = () => {
             const roll = document.getElementById('rollSearch').value.trim();
             if (!roll) return showToast("Enter roll number", true);
-
             const idx = students.findIndex(s => getRoll(s) === roll);
             const form = document.getElementById('studentForm');
             const noRes = document.getElementById('noStudent');
@@ -512,60 +492,34 @@
                 const s = students[idx];
                 form.classList.remove('hidden');
                 noRes.classList.add('hidden');
-
                 document.getElementById('f-name').value = s['Full Name(English)'] || s.Name || s.name || 'Student';
                 document.getElementById('f-roll').value = getRoll(s);
-
-                const keys = { 
-                    phone: 'Gurdian phone No ', 
-                    reg: 'Registration No',
-                    seat: 'Seat No',
-                    address: 'Address',
-                    email: 'Email'
-                };
-
+                const keys = { phone: 'Gurdian phone No ', reg: 'Registration No', seat: 'Seat No', address: 'Address', email: 'Email' };
                 const isVerified = !!s.updatedAt;
-
                 Object.keys(keys).forEach(k => {
                     const field = document.getElementById(`f-${k}`);
                     const value = s[keys[k]] || s[k] || '';
                     field.value = value;
-                    
                     const shouldLock = isVerified || (value && value.toString().trim() !== '');
-                    
                     if (shouldLock) {
-                        if (field.tagName === 'SELECT') {
-                            field.disabled = true;
-                            field.classList.add('input-locked');
-                        } else {
-                            field.readOnly = true;
-                            field.classList.add('input-locked');
-                        }
+                        if (field.tagName === 'SELECT') { field.disabled = true; } else { field.readOnly = true; }
+                        field.classList.add('input-locked');
                     } else {
-                        if (field.tagName === 'SELECT') {
-                            field.disabled = false;
-                            field.classList.remove('input-locked');
-                        } else {
-                            field.readOnly = false;
-                            field.classList.remove('input-locked');
-                        }
+                        if (field.tagName === 'SELECT') { field.disabled = false; } else { field.readOnly = false; }
+                        field.classList.remove('input-locked');
                     }
                     validateField(field, `msg-${k}`);
                 });
-
                 if (isVerified) {
                     badgeContainer.innerHTML = `<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-200">Verified & Locked</span>`;
-                    saveBtnContainer.innerHTML = `<div class="text-center p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-emerald-600 font-bold text-sm w-full">✅ Your information is already verified and up to date.</div>`;
-                    showToast("Profile found! (Verified) ✅");
+                    saveBtnContainer.innerHTML = `<div class="text-center p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-emerald-600 font-bold text-sm w-full">✅ Verified and up to date.</div>`;
+                    showToast("Profile Verified ✅");
                 } else {
                     badgeContainer.innerHTML = `<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-200">Action Required</span>`;
                     saveBtnContainer.innerHTML = `<button id="saveBtn" onclick="saveStudentData()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-16 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-emerald-200 transition-all active:scale-95 flex items-center justify-center select-none">Update My Profile</button>`;
-                    showToast("Profile found! Fill missing data.");
+                    showToast("Profile Found");
                 }
-                
-                if (window.innerWidth < 768) {
-                    setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-                }
+                if (window.innerWidth < 768) { setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); }
             } else {
                 currentStudentIdx = -1;
                 form.classList.add('hidden');
@@ -575,29 +529,15 @@
 
         window.saveStudentData = async () => {
             if (currentStudentIdx === -1 || !auth.currentUser) return;
-            
             const s = students[currentStudentIdx];
-            if (s.updatedAt) {
-                showToast("Data already verified", true);
-                return;
-            }
-
+            if (s.updatedAt) return showToast("Data already verified", true);
             const btn = document.getElementById('saveBtn');
             btn.disabled = true;
             btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...`;
-
             const fields = ['phone', 'reg', 'seat', 'address', 'email'];
             let allValid = true;
-            fields.forEach(f => {
-                if (!validateField(document.getElementById(`f-${f}`), `msg-${f}`)) allValid = false;
-            });
-
-            if (!allValid) {
-                btn.disabled = false;
-                btn.innerHTML = `Update My Profile`;
-                return showToast("Fill all fields", true);
-            }
-
+            fields.forEach(f => { if (!validateField(document.getElementById(`f-${f}`), `msg-${f}`)) allValid = false; });
+            if (!allValid) { btn.disabled = false; btn.innerHTML = `Update My Profile`; return showToast("Fill all fields", true); }
             const roll = getRoll(students[currentStudentIdx]);
             const payload = {
                 'Gurdian phone No ': document.getElementById('f-phone').value.trim(),
@@ -607,16 +547,14 @@
                 'Email': document.getElementById('f-email').value.trim(),
                 'updatedAt': new Date().toISOString()
             };
-
             try {
                 await setDoc(doc(db, ...collectionPath, roll), payload, { merge: true });
                 students[currentStudentIdx] = { ...students[currentStudentIdx], ...payload };
                 showToast("Profile Updated! 🎉");
-                
                 window.searchStudent();
                 renderAdminTable();
             } catch (err) {
-                console.error("Write error:", err);
+                console.error(err);
                 showToast("Update Failed", true);
                 btn.disabled = false;
                 btn.innerHTML = `Update My Profile`;
@@ -627,10 +565,8 @@
             if (document.getElementById('adminPassword').value === 'aj1634') {
                 document.getElementById('admin-auth').classList.add('hidden');
                 document.getElementById('admin-controls').classList.remove('hidden');
-                showToast("Welcome Admin 👋");
-            } else {
-                showToast("Wrong PIN", true);
-            }
+                showToast("Admin Logged In");
+            } else { showToast("Wrong PIN", true); }
         };
 
         window.renderAdminTable = () => {
@@ -654,14 +590,51 @@
         };
 
         window.exportExcel = async () => {
-            showToast("Generating report...");
+            showToast("Syncing data...");
             await loadAndMergeData();
             const cleanData = students.map(({updatedAt, ...rest}) => rest);
             const ws = XLSX.utils.json_to_sheet(cleanData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Students");
-            XLSX.writeFile(wb, `SMH_Portal_Report_${new Date().toLocaleDateString()}.xlsx`);
-            showToast("Report Downloaded 📊");
+            XLSX.writeFile(wb, `SMH_Full_Export_${new Date().toLocaleDateString()}.xlsx`);
+            showToast("Excel Downloaded");
+        };
+
+        window.exportPendingPDF = async () => {
+            const { jsPDF } = window.jspdf;
+            showToast("Generating Pending List...");
+            await loadAndMergeData();
+            const pending = students.filter(s => !s.updatedAt);
+            if (pending.length === 0) return showToast("No pending records!", true);
+            
+            const doc = new jsPDF();
+            doc.setFontSize(18);
+            doc.setTextColor(30, 41, 59);
+            doc.text("SHAHEED MONAYEM HOSTEL", 105, 20, { align: "center" });
+            doc.setFontSize(12);
+            doc.setTextColor(100, 116, 139);
+            doc.text("Pending Verification List", 105, 28, { align: "center" });
+            doc.setFontSize(8);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 34, { align: "center" });
+            
+            // Map table data to: S.L, Name, Department, Semester (Replacing Roll)
+            const tableData = pending.map((s, i) => [
+                i + 1, 
+                s['Full Name(English)'] || s.Name || s.name || '---', 
+                s['Department '] || '---',
+                s['Semester '] || s.Semester || '---'
+            ]);
+
+            doc.autoTable({
+                startY: 40,
+                head: [['S.L', 'Name', 'Department', 'Semester']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
+                styles: { fontSize: 8 }
+            });
+            doc.save(`SMH_Pending_List_${new Date().toLocaleDateString()}.pdf`);
+            showToast("PDF Downloaded 📄");
         };
 
         window.importExcel = async (e) => {
@@ -671,46 +644,32 @@
             reader.onload = async (evt) => {
                 const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
                 const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                showToast(`Cloud Upload: ${rows.length} records...`);
+                showToast(`Cloud Uploading...`);
                 for (let s of rows) {
                     const roll = getRoll(s);
-                    if (roll) {
-                        try { await setDoc(doc(db, ...collectionPath, roll), s, { merge: true }); } 
-                        catch (e) { console.error("Batch error:", roll); }
-                    }
+                    if (roll) { try { await setDoc(doc(db, ...collectionPath, roll), s, { merge: true }); } catch (e) {} }
                 }
                 loadAndMergeData();
-                showToast("Database Reset Complete! ☁️");
+                showToast("Database Reset Complete!");
             };
             reader.readAsArrayBuffer(file);
         };
 
         window.switchTab = (tab) => {
             const isStudent = tab === 'student';
-            const studentBtn = document.getElementById('tab-student');
-            const adminBtn = document.getElementById('tab-admin');
-            
-            studentBtn.className = isStudent ? "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all bg-blue-600 text-white shadow-lg select-none" : "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 select-none";
-            adminBtn.className = !isStudent ? "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all bg-slate-800 text-white shadow-lg select-none" : "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 select-none";
-            
+            document.getElementById('tab-student').className = isStudent ? "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all bg-blue-600 text-white shadow-lg select-none" : "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 select-none";
+            document.getElementById('tab-admin').className = !isStudent ? "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all bg-slate-800 text-white shadow-lg select-none" : "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 select-none";
             document.getElementById('section-student').classList.toggle('hidden', !isStudent);
             document.getElementById('section-admin').classList.toggle('hidden', isStudent);
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.showToast = (msg, isError = false) => {
             const toast = document.getElementById('toast');
-            if (toast) {
-                document.getElementById('toastMsg').textContent = msg;
-                toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-auto md:bottom-10 md:left-auto md:right-10 md:translate-x-0 md:translate-y-0 px-8 py-5 rounded-[2rem] shadow-2xl text-white font-black text-sm md:text-base transition-all duration-300 z-[500] flex items-center text-center max-w-[85vw] pointer-events-auto opacity-100 scale-100 ${isError ? 'bg-red-500' : 'bg-blue-600'}`;
-                
-                setTimeout(() => {
-                    toast.classList.remove('opacity-100', 'scale-100');
-                    toast.classList.add('opacity-0', 'scale-90');
-                    toast.classList.add('pointer-events-none');
-                }, 3000);
-            }
+            if (!toast) return;
+            document.getElementById('toastMsg').textContent = msg;
+            toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-auto md:bottom-10 md:left-auto md:right-10 md:translate-x-0 md:translate-y-0 px-8 py-5 rounded-[2rem] shadow-2xl text-white font-black text-sm md:text-base transition-all duration-300 z-[500] flex items-center text-center max-w-[85vw] opacity-100 scale-100 ${isError ? 'bg-red-500' : 'bg-blue-600'}`;
+            setTimeout(() => { toast.classList.replace('opacity-100', 'opacity-0'); toast.classList.replace('scale-100', 'scale-90'); }, 3000);
         };
 
         function validateField(input, msgId) {
@@ -736,29 +695,10 @@
             if (parent) parent.className = `inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] mt-4 border transition-all ${modes[status].parent} shadow-sm`;
         }
 
-        window.openSeatModal = () => {
-            const modal = document.getElementById('seatModal');
-            if (modal) modal.classList.remove('hidden');
-        };
-        window.closeSeatModal = (e) => {
-            const modal = document.getElementById('seatModal');
-            if (modal) {
-                if (e && e.target.id !== 'seatModal' && e.type === 'click') return;
-                modal.classList.add('hidden');
-            }
-        };
-
-        window.openContactModal = () => {
-            const modal = document.getElementById('contactModal');
-            if (modal) modal.classList.remove('hidden');
-        };
-        window.closeContactModal = (e) => {
-            const modal = document.getElementById('contactModal');
-            if (modal) {
-                if (e && e.target.id !== 'contactModal' && e.type === 'click') return;
-                modal.classList.add('hidden');
-            }
-        };
+        window.openSeatModal = () => document.getElementById('seatModal').classList.remove('hidden');
+        window.closeSeatModal = () => document.getElementById('seatModal').classList.add('hidden');
+        window.openContactModal = () => document.getElementById('contactModal').classList.remove('hidden');
+        window.closeContactModal = () => document.getElementById('contactModal').classList.add('hidden');
     </script>
 </body>
 </html>
