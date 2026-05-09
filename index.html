@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SHAHEED MONAYEM HOSTEL - Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .missing-field { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
+        
+        /* Mobile-first scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Smooth appearance for mobile browsers */
+        .mobile-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        @media (max-width: 640px) {
+            .mobile-grid-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-900 selection:bg-blue-100">
+    <div id="app" class="max-w-4xl mx-auto px-4 py-6 md:py-10">
+        <!-- Header -->
+        <header class="flex flex-col items-center justify-center mb-6 md:mb-10 text-center">
+            <div class="relative mb-4">
+                <img src="logo.jpg" alt="Logo" onerror="this.src='https://placehold.co/100x100/1e293b/ffffff?text=SMH'" class="w-20 h-20 md:w-24 md:h-24 rounded-full shadow-2xl border-4 border-white object-cover">
+                <div class="absolute -bottom-1 -right-1 bg-emerald-500 w-5 h-5 rounded-full border-2 border-white shadow-sm" id="onlineIndicator"></div>
+            </div>
+            <h1 class="text-2xl md:text-4xl font-extrabold text-slate-800 tracking-tight leading-tight uppercase px-4">SHAHEED MONAYEM HOSTEL</h1>
+            <p class="text-slate-500 font-medium text-sm md:text-base mt-1">Student Data Verification Portal</p>
+            <div id="firebaseStatus" class="inline-flex items-center px-4 py-1.5 rounded-full bg-white text-slate-600 text-[10px] md:text-xs font-bold mt-4 border border-slate-200 shadow-sm transition-all">
+                <span id="statusDot" class="mr-2 h-2 w-2 rounded-full bg-slate-300"></span>
+                <span id="statusText" class="tracking-widest uppercase">Initializing...</span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs - Sticky-ready for mobile -->
+        <nav class="flex justify-center mb-6 md:mb-10 space-x-1.5 bg-slate-200/50 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 w-full max-w-sm mx-auto shadow-inner">
+            <button onclick="switchTab('student')" id="tab-student" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all bg-blue-600 text-white shadow-lg active:scale-95 select-none">Student Portal</button>
+            <button onclick="switchTab('admin')" id="tab-admin" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 active:scale-95 select-none">Admin Panel</button>
+        </nav>
+
+        <!-- Student Portal -->
+        <section id="section-student" class="space-y-6">
+            <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 p-6 md:p-12 border border-slate-100 mobile-card">
+                <div class="text-center mb-8 md:mb-12">
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800">Complete Profile</h2>
+                    <p class="text-slate-500 mt-2 text-sm md:text-base">Verify your data using Polytechnic Roll</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 mb-8 md:mb-12">
+                    <div class="relative flex-1">
+                        <input type="text" id="rollSearch" 
+                               inputmode="numeric" 
+                               pattern="[0-9]*"
+                               placeholder="Roll (e.g. 819494)" 
+                               class="w-full px-6 py-5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none text-lg transition-all shadow-inner bg-slate-50 font-semibold placeholder:text-slate-300">
+                    </div>
+                    <button onclick="searchStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-blue-200 active:scale-95 flex items-center justify-center select-none">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Search
+                    </button>
+                </div>
+
+                <!-- Profile Form -->
+                <div id="studentForm" class="hidden space-y-10 animate-in slide-in-from-bottom-4 duration-500">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t-2 border-slate-50">
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Full Name</label>
+                            <input type="text" id="f-name" class="w-full px-6 py-4 rounded-2xl bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed font-bold" readonly>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Roll Number</label>
+                            <input type="text" id="f-roll" class="w-full px-6 py-4 rounded-2xl bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed font-bold" readonly>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Guardian Phone</label>
+                            <input type="tel" id="f-phone" inputmode="tel" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold text-lg">
+                            <p id="msg-phone" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Registration No.</label>
+                            <input type="text" id="f-reg" inputmode="numeric" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold text-lg">
+                            <p id="msg-reg" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Seat Number</label>
+                            <div class="relative">
+                                <input type="text" id="f-seat" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold text-lg">
+                                <button type="button" onclick="openSeatModal()" class="absolute right-3 top-3 bg-blue-100 text-blue-600 p-2 rounded-xl active:scale-90 transition-all">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                </button>
+                            </div>
+                            <p id="msg-seat" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Address (Bangla)</label>
+                            <input type="text" id="f-address" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold" placeholder="গ্রাম, উপজেলা, জেলা">
+                            <p id="msg-address" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Email</label>
+                            <input type="email" id="f-email" inputmode="email" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold">
+                            <p id="msg-email" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center pt-6">
+                        <button id="saveBtn" onclick="saveStudentData()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-16 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-emerald-200 transition-all active:scale-95 flex items-center justify-center select-none">
+                            Update My Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div id="noStudent" class="hidden flex flex-col items-center py-16 text-center animate-in zoom-in-95">
+                    <div class="p-6 bg-slate-50 rounded-full mb-6">
+                        <svg class="w-16 h-16 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Roll Not Found</h3>
+                    <p class="text-slate-500 max-w-xs mt-2 text-sm">Please ensure you entered the correct roll number. Contact the hostel admin if your record is missing.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Panel -->
+        <section id="section-admin" class="hidden">
+            <div class="bg-white rounded-[2.5rem] shadow-xl p-6 md:p-12 border border-slate-100 mobile-card">
+                <div id="admin-auth" class="max-w-md mx-auto space-y-6">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-black text-slate-800">Admin Login</h2>
+                        <p class="text-slate-500 mt-2">Enter PIN to access controls</p>
+                    </div>
+                    <input type="password" id="adminPassword" inputmode="numeric" placeholder="••••" 
+                           class="w-full px-6 py-5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-slate-100 outline-none text-center text-3xl tracking-[1em] shadow-inner bg-slate-50 font-bold">
+                    <button onclick="unlockAdmin()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-5 rounded-2xl font-black text-lg shadow-xl transition-all active:scale-95 select-none">
+                        Access Panel
+                    </button>
+                </div>
+
+                <div id="admin-controls" class="hidden space-y-10 animate-in fade-in duration-300">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-8 bg-blue-50 rounded-[2rem] border border-blue-100 shadow-sm">
+                            <h3 class="font-black text-blue-900 mb-2 text-xs uppercase tracking-[0.2em]">Import Hub</h3>
+                            <p class="text-xs text-blue-600 mb-6 font-medium">Replace cloud database with a fresh master file.</p>
+                            <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
+                            <label for="excelInput" class="block w-full py-5 bg-white border-2 border-dashed border-blue-200 rounded-2xl text-center cursor-pointer hover:border-blue-400 transition-all active:scale-95 shadow-sm">
+                                <span class="text-blue-600 font-black text-xs uppercase tracking-widest">Select Excel File</span>
+                            </label>
+                        </div>
+                        <div class="p-8 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm">
+                            <h3 class="font-black text-emerald-900 mb-2 text-xs uppercase tracking-[0.2em]">Export Center</h3>
+                            <p class="text-xs text-emerald-600 mb-6 font-medium">Generate a detailed report with all current updates.</p>
+                            <button onclick="exportExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-100 transition-all active:scale-95 select-none">
+                                Download Updated Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-10 border-t-2 border-slate-50">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 px-2">
+                            <h3 class="font-black text-slate-800 text-lg uppercase tracking-tight">Database Snapshot</h3>
+                            <span class="text-[10px] font-black px-4 py-2 bg-slate-100 rounded-xl text-slate-500 tracking-widest uppercase border border-slate-200 shadow-sm"><span id="count">0</span> Registered Students</span>
+                        </div>
+                        <div class="rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+                            <div class="overflow-x-auto mobile-grid-table">
+                                <table class="w-full text-left border-collapse bg-white">
+                                    <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black">
+                                        <tr>
+                                            <th class="p-5 border-b border-slate-100 whitespace-nowrap">S.L</th>
+                                            <th class="p-5 border-b border-slate-100 whitespace-nowrap">Roll No</th>
+                                            <th class="p-5 border-b border-slate-100 whitespace-nowrap">Name</th>
+                                            <th class="p-5 border-b border-slate-100 whitespace-nowrap">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminTableBody" class="text-sm font-medium">
+                                        <tr><td colspan="4" class="p-16 text-center text-slate-300 italic font-bold">Synchronizing with cloud...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Seat Modal -->
+    <div id="seatModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-[200] p-4" onclick="closeSeatModal(event)">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-200" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
+                <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight">Seat Reference Map</h2>
+                <button onclick="closeSeatModal()" class="w-10 h-10 flex items-center justify-center rounded-2xl bg-white text-slate-400 hover:bg-red-500 hover:text-white transition-all shadow-sm active:scale-90">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 md:p-8 text-center bg-slate-100">
+                <img src="1.jpg" alt="Seat Map" onerror="this.src='https://placehold.co/600x400?text=Seat+Reference+Image+Missing'" class="w-full rounded-[1.5rem] shadow-2xl border-4 border-white">
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Optimized for Center Mobile View -->
+    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-auto md:bottom-10 md:left-auto md:right-10 md:translate-x-0 md:translate-y-0 px-8 py-5 rounded-[2rem] shadow-2xl text-white font-black text-sm md:text-base opacity-0 scale-90 pointer-events-none transition-all duration-300 z-[500] flex items-center text-center max-w-[85vw]">
+        <span id="toastMsg" class="w-full"></span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'hostel-portal-v2';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyCZ7WGTBA9lAYkRX8jCKn6LewCR9l_y8bg",
+            authDomain: "hostel-data-update.firebaseapp.com",
+            projectId: "hostel-data-update",
+            storageBucket: "hostel-data-update.firebasestorage.app",
+            messagingSenderId: "174592340879",
+            appId: "1:174592340879:web:f9575eca718016348d91fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const collectionPath = ['artifacts', appId, 'public', 'data', 'students'];
+
+        let students = [];
+        let currentStudentIdx = -1;
+
+        window.onload = async () => {
+            updateFirebaseStatus('connecting', 'Cloud Handshake');
+            
+            const startAuth = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (err) {
+                    console.error("Auth Failure:", err);
+                    updateFirebaseStatus('error', 'Auth Blocked');
+                }
+            };
+
+            await startAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    updateFirebaseStatus('connecting', 'Synchronizing');
+                    loadAndMergeData();
+                } else {
+                    updateFirebaseStatus('error', 'Offline');
+                }
+            });
+        };
+
+        async function loadAndMergeData() {
+            if (!auth.currentUser) return;
+
+            try {
+                let masterData = [];
+                try {
+                    const response = await fetch('hostel-data.xlsx');
+                    if (response.ok) {
+                        const buffer = await response.arrayBuffer();
+                        const workbook = XLSX.read(buffer, { type: 'array' });
+                        masterData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    }
+                } catch (e) {
+                    console.warn("Static master file not found.");
+                }
+
+                let cloudUpdates = {};
+                try {
+                    const snap = await getDocs(collection(db, ...collectionPath));
+                    snap.forEach(d => { cloudUpdates[d.id] = d.data(); });
+                } catch (err) {
+                    console.error("Cloud Access Error:", err);
+                }
+
+                const registry = new Map();
+                masterData.forEach(row => {
+                    const roll = getRoll(row);
+                    if (roll) registry.set(roll, row);
+                });
+
+                Object.keys(cloudUpdates).forEach(roll => {
+                    const existing = registry.get(roll) || {};
+                    registry.set(roll, { ...existing, ...cloudUpdates[roll] });
+                });
+
+                students = Array.from(registry.values());
+                renderAdminTable();
+                
+                if (students.length > 0) {
+                    updateFirebaseStatus('success', `Online (${students.length})`);
+                } else {
+                    updateFirebaseStatus('connecting', 'Ready for Import');
+                }
+            } catch (err) {
+                console.error("CRITICAL SYNC ERROR:", err);
+                updateFirebaseStatus('error', 'Sync Failed');
+                showToast("Connection failed", true);
+            }
+        }
+
+        function getRoll(s) {
+            if (!s) return null;
+            const candidates = ['Roll', 'roll', 'Roll No', 'roll no', 'Roll Number'];
+            for (let c of candidates) if (s[c]) return s[c].toString().trim();
+            const keys = Object.keys(s);
+            const foundKey = keys.find(k => k.toLowerCase().includes('roll'));
+            return foundKey ? s[foundKey].toString().trim() : null;
+        }
+
+        window.searchStudent = () => {
+            const roll = document.getElementById('rollSearch').value.trim();
+            if (!roll) return showToast("Enter roll number", true);
+
+            const idx = students.findIndex(s => getRoll(s) === roll);
+            const form = document.getElementById('studentForm');
+            const noRes = document.getElementById('noStudent');
+
+            if (idx !== -1) {
+                currentStudentIdx = idx;
+                const s = students[idx];
+                form.classList.remove('hidden');
+                noRes.classList.add('hidden');
+
+                document.getElementById('f-name').value = s['Full Name(English)'] || s.Name || s.name || 'Student';
+                document.getElementById('f-roll').value = getRoll(s);
+
+                const keys = { 
+                    phone: 'Gurdian phone No ', 
+                    reg: 'Registration No',
+                    seat: 'Seat No',
+                    address: 'Address',
+                    email: 'Email'
+                };
+
+                Object.keys(keys).forEach(k => {
+                    const field = document.getElementById(`f-${k}`);
+                    field.value = s[keys[k]] || s[k] || '';
+                    validateField(field, `msg-${k}`);
+                });
+                showToast("Profile found! ✅");
+                
+                if (window.innerWidth < 768) {
+                    setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+                }
+            } else {
+                currentStudentIdx = -1;
+                form.classList.add('hidden');
+                noRes.classList.remove('hidden');
+            }
+        };
+
+        window.saveStudentData = async () => {
+            if (currentStudentIdx === -1 || !auth.currentUser) return;
+
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...`;
+
+            const fields = ['phone', 'reg', 'seat', 'address', 'email'];
+            let allValid = true;
+            fields.forEach(f => {
+                if (!validateField(document.getElementById(`f-${f}`), `msg-${f}`)) allValid = false;
+            });
+
+            if (!allValid) {
+                btn.disabled = false;
+                btn.innerHTML = `Update My Profile`;
+                return showToast("Fill all fields", true);
+            }
+
+            const roll = getRoll(students[currentStudentIdx]);
+            const payload = {
+                'Gurdian phone No ': document.getElementById('f-phone').value.trim(),
+                'Registration No': document.getElementById('f-reg').value.trim(),
+                'Seat No': document.getElementById('f-seat').value.trim(),
+                'Address': document.getElementById('f-address').value.trim(),
+                'Email': document.getElementById('f-email').value.trim(),
+                'updatedAt': new Date().toISOString()
+            };
+
+            try {
+                await setDoc(doc(db, ...collectionPath, roll), payload, { merge: true });
+                students[currentStudentIdx] = { ...students[currentStudentIdx], ...payload };
+                showToast("Profile Updated! 🎉");
+                renderAdminTable();
+            } catch (err) {
+                console.error("Write error:", err);
+                showToast("Update Failed", true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Update My Profile`;
+            }
+        };
+
+        window.unlockAdmin = () => {
+            if (document.getElementById('adminPassword').value === 'aj1634') {
+                document.getElementById('admin-auth').classList.add('hidden');
+                document.getElementById('admin-controls').classList.remove('hidden');
+                showToast("Welcome Admin 👋");
+            } else {
+                showToast("Wrong PIN", true);
+            }
+        };
+
+        window.renderAdminTable = () => {
+            const tbody = document.getElementById('adminTableBody');
+            document.getElementById('count').innerText = students.length;
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-16 text-center text-slate-300 font-bold italic">No records yet.</td></tr>';
+                return;
+            }
+            // Removed .slice(0, 100) to show all student data
+            tbody.innerHTML = students.map((s, index) => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                    <td class="p-5 font-black text-slate-400 text-[10px]">${index + 1}</td>
+                    <td class="p-5 font-black text-slate-800 text-xs">${getRoll(s)}</td>
+                    <td class="p-5 text-slate-600 text-xs truncate max-w-[120px]">${s['Full Name(English)'] || s.Name || s.name || '---'}</td>
+                    <td class="p-5">
+                        <span class="px-3 py-1 rounded-lg text-[8px] font-black tracking-widest ${!!s.updatedAt ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}">
+                            ${!!s.updatedAt ? 'VERIFIED' : 'PENDING'}
+                        </span>
+                    </td>
+                </tr>`).join('');
+        };
+
+        window.exportExcel = async () => {
+            showToast("Generating report...");
+            await loadAndMergeData();
+            const cleanData = students.map(({updatedAt, ...rest}) => rest);
+            const ws = XLSX.utils.json_to_sheet(cleanData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Students");
+            XLSX.writeFile(wb, `SMH_Portal_Report_${new Date().toLocaleDateString()}.xlsx`);
+            showToast("Report Downloaded 📊");
+        };
+
+        window.importExcel = async (e) => {
+            const file = e.target.files[0];
+            if (!file || !auth.currentUser) return;
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                showToast(`Cloud Upload: ${rows.length} records...`);
+                for (let s of rows) {
+                    const roll = getRoll(s);
+                    if (roll) {
+                        try { await setDoc(doc(db, ...collectionPath, roll), s, { merge: true }); } 
+                        catch (e) { console.error("Batch error:", roll); }
+                    }
+                }
+                loadAndMergeData();
+                showToast("Database Reset Complete! ☁️");
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        window.switchTab = (tab) => {
+            const isStudent = tab === 'student';
+            const studentBtn = document.getElementById('tab-student');
+            const adminBtn = document.getElementById('tab-admin');
+            
+            studentBtn.className = isStudent ? "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all bg-blue-600 text-white shadow-lg select-none" : "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 select-none";
+            adminBtn.className = !isStudent ? "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all bg-slate-800 text-white shadow-lg select-none" : "flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 select-none";
+            
+            document.getElementById('section-student').classList.toggle('hidden', !isStudent);
+            document.getElementById('section-admin').classList.toggle('hidden', isStudent);
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.showToast = (msg, isError = false) => {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-auto md:bottom-10 md:left-auto md:right-10 md:translate-x-0 md:translate-y-0 px-8 py-5 rounded-[2rem] shadow-2xl text-white font-black text-sm md:text-base transition-all duration-300 z-[500] flex items-center text-center max-w-[85vw] pointer-events-auto opacity-100 scale-100 ${isError ? 'bg-red-500' : 'bg-blue-600'}`;
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'scale-100');
+                toast.classList.add('opacity-0', 'scale-90');
+                toast.classList.add('pointer-events-none');
+            }, 3000);
+        };
+
+        function validateField(input, msgId) {
+            const valid = input.value.trim() !== '';
+            input.classList.toggle('missing-field', !valid);
+            document.getElementById(msgId).classList.toggle('hidden', valid);
+            return valid;
+        }
+
+        function updateFirebaseStatus(status, message) {
+            const el = document.getElementById('statusText');
+            const dot = document.getElementById('statusDot');
+            const parent = document.getElementById('firebaseStatus');
+            const modes = { 
+                connecting: { dot: 'bg-amber-400 animate-pulse', parent: 'bg-amber-50 text-amber-700 border-amber-100' },
+                success: { dot: 'bg-emerald-500', parent: 'bg-emerald-50 text-emerald-800 border-emerald-100' },
+                error: { dot: 'bg-red-500', parent: 'bg-red-50 text-red-800 border-red-100' }
+            };
+            el.textContent = message;
+            dot.className = `mr-2 h-2 w-2 rounded-full ${modes[status].dot}`;
+            parent.className = `inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] mt-4 border transition-all ${modes[status].parent} shadow-sm`;
+        }
+
+        window.openSeatModal = () => document.getElementById('seatModal').classList.remove('hidden');
+        window.closeSeatModal = (e) => {
+            if (e && e.target.id !== 'seatModal' && e.type === 'click') return;
+            document.getElementById('seatModal').classList.add('hidden');
+        };
+    </script>
+</body>
+</html>
