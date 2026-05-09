@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +30,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* Smooth appearance for mobile browsers */
         .mobile-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -50,7 +50,6 @@
             opacity: 1 !important; 
         }
 
-        /* Floating Button Animation */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-5px); }
@@ -60,7 +59,6 @@
             animation: float 3s ease-in-out infinite;
         }
 
-        /* Countdown Tiles */
         .timer-tile {
             background: #1e293b;
             color: white;
@@ -94,7 +92,7 @@
             <button onclick="switchTab('admin')" id="tab-admin" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-100 active:scale-95 select-none">Admin Panel</button>
         </nav>
 
-        <!-- Student Portal Section -->
+        <!-- Student Portal -->
         <section id="section-student" class="space-y-6">
             <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 p-6 md:p-12 border border-slate-100 mobile-card">
                 <div class="text-center mb-8 md:mb-12">
@@ -116,14 +114,16 @@
                     </button>
                 </div>
 
+                <!-- Profile Form -->
                 <div id="studentForm" class="hidden space-y-10 animate-in slide-in-from-bottom-4 duration-500">
                     <div class="flex justify-between items-center px-2">
                         <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Verification Status</h3>
                         <div id="formStatusBadge"></div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t-2 border-slate-50">
-                        <div class="space-y-2">
+                    <!-- Read Only Info Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t-2 border-slate-50">
+                        <div class="space-y-2 md:col-span-1">
                             <label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Full Name</label>
                             <input type="text" id="f-name" class="w-full px-6 py-4 rounded-2xl bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed font-bold" readonly>
                         </div>
@@ -131,8 +131,13 @@
                             <label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Roll Number</label>
                             <input type="text" id="f-roll" class="w-full px-6 py-4 rounded-2xl bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed font-bold" readonly>
                         </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Room Number</label>
+                            <input type="text" id="f-room" class="w-full px-6 py-4 rounded-2xl bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed font-bold" readonly>
+                        </div>
                     </div>
 
+                    <!-- Input Section -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Guardian Phone</label>
@@ -227,7 +232,7 @@
                         </div>
                         <div class="p-8 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm text-center">
                             <h3 class="font-black text-emerald-900 mb-2 text-xs uppercase tracking-[0.2em]">Reports & Exports</h3>
-                            <p class="text-xs text-emerald-600 mb-6 font-medium">Download database snapshots or pending lists.</p>
+                            <p class="text-xs text-emerald-600 mb-6 font-medium">Download snapshots or pending lists.</p>
                             <div class="flex flex-col gap-3">
                                 <button onclick="exportExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 transition-all active:scale-95 select-none">
                                     Download Full Excel
@@ -313,7 +318,7 @@
                     <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
                 <h2 class="text-2xl font-black text-slate-800 mb-2">Need Help?</h2>
-                <p class="text-slate-500 mb-6 text-sm px-4 leading-relaxed">For any corrections or technical support, please use the following methods:</p>
+                <p class="text-slate-500 mb-6 text-sm px-4 leading-relaxed">For any corrections or support, use the following:</p>
                 <div class="space-y-3 mb-8">
                     <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
                         <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Admin Location</span>
@@ -374,7 +379,6 @@
 
         // Countdown Logic
         const deadline = new Date("2026-05-11T04:00:00").getTime();
-
         function updateCountdown() {
             const now = new Date().getTime();
             const t = deadline - now;
@@ -478,6 +482,13 @@
             return foundKey ? s[foundKey].toString().trim() : null;
         }
 
+        function getRoom(s) {
+            if (!s) return '';
+            const candidates = ['Room Number', 'Room N0', 'Room No', 'room'];
+            for (let c of candidates) if (s[c]) return s[c].toString().trim();
+            return '';
+        }
+
         window.searchStudent = () => {
             const roll = document.getElementById('rollSearch').value.trim();
             if (!roll) return showToast("Enter roll number", true);
@@ -492,8 +503,13 @@
                 const s = students[idx];
                 form.classList.remove('hidden');
                 noRes.classList.add('hidden');
+
+                // Read Only Data
                 document.getElementById('f-name').value = s['Full Name(English)'] || s.Name || s.name || 'Student';
                 document.getElementById('f-roll').value = getRoll(s);
+                document.getElementById('f-room').value = getRoom(s) || '---';
+
+                // Input Data
                 const keys = { phone: 'Gurdian phone No ', reg: 'Registration No', seat: 'Seat No', address: 'Address', email: 'Email' };
                 const isVerified = !!s.updatedAt;
                 Object.keys(keys).forEach(k => {
@@ -606,33 +622,13 @@
             await loadAndMergeData();
             const pending = students.filter(s => !s.updatedAt);
             if (pending.length === 0) return showToast("No pending records!", true);
-            
             const doc = new jsPDF();
             doc.setFontSize(18);
-            doc.setTextColor(30, 41, 59);
             doc.text("SHAHEED MONAYEM HOSTEL", 105, 20, { align: "center" });
             doc.setFontSize(12);
-            doc.setTextColor(100, 116, 139);
             doc.text("Pending Verification List", 105, 28, { align: "center" });
-            doc.setFontSize(8);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 34, { align: "center" });
-            
-            // Map table data to: S.L, Name, Department, Semester (Replacing Roll)
-            const tableData = pending.map((s, i) => [
-                i + 1, 
-                s['Full Name(English)'] || s.Name || s.name || '---', 
-                s['Department '] || '---',
-                s['Semester '] || s.Semester || '---'
-            ]);
-
-            doc.autoTable({
-                startY: 40,
-                head: [['S.L', 'Name', 'Department', 'Semester']],
-                body: tableData,
-                theme: 'grid',
-                headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
-                styles: { fontSize: 8 }
-            });
+            const tableData = pending.map((s, i) => [i + 1, s['Full Name(English)'] || s.Name || s.name || '---', s['Department '] || '---', s['Semester '] || s.Semester || '---']);
+            doc.autoTable({ startY: 40, head: [['S.L', 'Name', 'Department', 'Semester']], body: tableData, theme: 'grid', styles: { fontSize: 8 } });
             doc.save(`SMH_Pending_List_${new Date().toLocaleDateString()}.pdf`);
             showToast("PDF Downloaded 📄");
         };
@@ -687,8 +683,8 @@
             const parent = document.getElementById('firebaseStatus');
             const modes = { 
                 connecting: { dot: 'bg-amber-400 animate-pulse', parent: 'bg-amber-50 text-amber-700 border-amber-100' },
-                success: { dot: 'bg-emerald-500', parent: 'bg-emerald-50 text-emerald-800 border-emerald-100' },
-                error: { dot: 'bg-red-500', parent: 'bg-red-50 text-red-800 border-red-100' }
+                success: { dot: 'bg-emerald-500', parent: 'bg-emerald-800 border-emerald-100' },
+                error: { dot: 'bg-red-500', parent: 'bg-red-800 border-red-100' }
             };
             if (el) el.textContent = message;
             if (dot) dot.className = `mr-2 h-2 w-2 rounded-full ${modes[status].dot}`;
@@ -696,9 +692,17 @@
         }
 
         window.openSeatModal = () => document.getElementById('seatModal').classList.remove('hidden');
-        window.closeSeatModal = () => document.getElementById('seatModal').classList.add('hidden');
+        window.closeSeatModal = (e) => {
+            const modal = document.getElementById('seatModal');
+            if (modal) { if (e && e.target.id !== 'seatModal' && e.type === 'click') return; modal.classList.add('hidden'); }
+        };
         window.openContactModal = () => document.getElementById('contactModal').classList.remove('hidden');
-        window.closeContactModal = () => document.getElementById('contactModal').classList.add('hidden');
+        window.closeContactModal = (e) => {
+            const modal = document.getElementById('contactModal');
+            if (modal) { if (e && e.target.id !== 'contactModal' && e.type === 'click') return; modal.classList.add('hidden'); }
+        };
     </script>
 </body>
 </html>
+
+```
