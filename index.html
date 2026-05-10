@@ -120,6 +120,7 @@
                         <div id="formStatusBadge"></div>
                     </div>
 
+                    <!-- Read Only Info Section -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t-2 border-slate-50">
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Full Name</label>
@@ -135,6 +136,7 @@
                         </div>
                     </div>
 
+                    <!-- Input Section -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Guardian Phone</label>
@@ -191,7 +193,7 @@
                     <h3 class="text-xl font-black text-slate-800">Roll Not Found</h3>
                     <p class="text-slate-500 max-w-xs mt-2 text-sm">Please ensure you entered the correct roll number.</p>
                     
-                    <div class="mt-8 p-6 bg-amber-50 rounded-3xl border border-amber-100 max-sm mx-auto">
+                    <div class="mt-8 p-6 bg-amber-50 rounded-3xl border border-amber-100 max-w-sm mx-auto">
                         <p class="text-amber-800 font-bold mb-4 tracking-tight">৩০৭ রুমে এসে যোগাযোগ কর</p>
                         <button onclick="openContactModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center mx-auto">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
@@ -237,7 +239,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="p-8 bg-blue-50 rounded-[2rem] border border-blue-100 shadow-sm text-center">
                             <h3 class="font-black text-blue-900 mb-2 text-xs uppercase tracking-[0.2em]">Import Hub</h3>
-                            <p class="text-xs text-blue-600 mb-6 font-medium">Reset cloud database with a fresh master file.</p>
+                            <p class="text-xs text-blue-600 mb-6 font-medium">Replace cloud database with a fresh master file.</p>
                             <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
                             <label for="excelInput" class="inline-block w-full py-3 px-4 bg-white border-2 border-dashed border-blue-200 rounded-xl cursor-pointer hover:border-blue-400 transition-all active:scale-95 shadow-sm">
                                 <span class="text-blue-600 font-black text-[10px] uppercase tracking-widest">Select Excel File</span>
@@ -443,13 +445,21 @@
             });
         };
 
+        // Helper to get value from a student object ignoring header spaces/casing
+        function getValue(student, fieldName) {
+            if (!student) return '';
+            const cleanFieldName = fieldName.toLowerCase().trim();
+            const key = Object.keys(student).find(k => k.toLowerCase().trim() === cleanFieldName);
+            return key ? student[key] : '';
+        }
+
         async function loadAndMergeData() {
             if (!auth.currentUser) return;
             try {
                 let masterData = [];
                 masterTemplateAOA = [];
                 try {
-                    const response = await fetch('hostel-data.xlsx');
+                    const response = await fetch('hostel-data.xlsx?v=' + new Date().getTime());
                     if (response.ok) {
                         const buffer = await response.arrayBuffer();
                         const workbook = XLSX.read(buffer, { type: 'array' });
@@ -477,6 +487,7 @@
 
                 Object.keys(cloudUpdates).forEach(roll => {
                     const existing = registry.get(roll) || {};
+                    // Merge: Cloud "Truth" on top of Excel foundation
                     registry.set(roll, { ...existing, ...cloudUpdates[roll] });
                 });
 
@@ -497,16 +508,20 @@
         function getRoll(s) {
             if (!s) return null;
             const candidates = ['Roll', 'roll', 'Roll No', 'roll no', 'Roll Number'];
-            for (let c of candidates) if (s[c]) return s[c].toString().trim();
-            const keys = Object.keys(s);
-            const foundKey = keys.find(k => k.toLowerCase().includes('roll'));
-            return foundKey ? s[foundKey].toString().trim() : null;
+            for (let c of candidates) {
+                const val = getValue(s, c);
+                if (val) return val.toString().trim();
+            }
+            return null;
         }
 
         function getRoom(s) {
             if (!s) return '';
             const candidates = ['Room Number', 'Room N0', 'Room No', 'room'];
-            for (let c of candidates) if (s[c]) return s[c].toString().trim();
+            for (let c of candidates) {
+                const val = getValue(s, c);
+                if (val) return val.toString().trim();
+            }
             return '';
         }
 
@@ -525,15 +540,23 @@
                 form.classList.remove('hidden');
                 noRes.classList.add('hidden');
 
-                document.getElementById('f-name').value = s['Full Name(English)'] || s.Name || s.name || 'Student';
+                document.getElementById('f-name').value = getValue(s, 'Full Name(English)') || getValue(s, 'Name') || 'Student';
                 document.getElementById('f-roll').value = getRoll(s);
                 document.getElementById('f-room').value = getRoom(s) || '---';
 
-                const keys = { phone: 'Gurdian phone No ', reg: 'Registration No', seat: 'Seat No', address: 'Address', email: 'Email' };
+                const keysMapping = { 
+                    phone: 'Gurdian phone No ', 
+                    reg: 'Registration No', 
+                    seat: 'Seat No', 
+                    address: 'Address', 
+                    email: 'Email' 
+                };
+
                 const isVerified = !!s.updatedAt;
-                Object.keys(keys).forEach(k => {
+
+                Object.keys(keysMapping).forEach(k => {
                     const field = document.getElementById(`f-${k}`);
-                    const value = s[keys[k]] || s[k] || '';
+                    const value = getValue(s, keysMapping[k]) || getValue(s, k) || '';
                     field.value = value;
                     const shouldLock = isVerified || (value && value.toString().trim() !== '');
                     if (shouldLock) {
@@ -545,6 +568,7 @@
                     }
                     validateField(field, `msg-${k}`);
                 });
+
                 if (isVerified) {
                     badgeContainer.innerHTML = `<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-200">Verified & Locked</span>`;
                     saveBtnContainer.innerHTML = `<div class="text-center p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-emerald-600 font-bold text-sm w-full">✅ Verified and up to date.</div>`;
@@ -569,10 +593,17 @@
             const btn = document.getElementById('saveBtn');
             btn.disabled = true;
             btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...`;
+            
             const fields = ['phone', 'reg', 'seat', 'address', 'email'];
             let allValid = true;
             fields.forEach(f => { if (!validateField(document.getElementById(`f-${f}`), `msg-${f}`)) allValid = false; });
-            if (!allValid) { btn.disabled = false; btn.innerHTML = `Update My Profile`; return showToast("Fill all fields", true); }
+            
+            if (!allValid) { 
+                btn.disabled = false; 
+                btn.innerHTML = `Update My Profile`; 
+                return showToast("Fill all fields", true); 
+            }
+
             const roll = getRoll(students[currentStudentIdx]);
             const payload = {
                 'Gurdian phone No ': document.getElementById('f-phone').value.trim(),
@@ -582,6 +613,7 @@
                 'Email': document.getElementById('f-email').value.trim(),
                 'updatedAt': new Date().toISOString()
             };
+
             try {
                 await setDoc(doc(db, ...collectionPath, roll), payload, { merge: true });
                 students[currentStudentIdx] = { ...students[currentStudentIdx], ...payload };
@@ -629,7 +661,7 @@
                 <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                     <td class="p-5 font-black text-slate-400 text-[10px]">${index + 1}</td>
                     <td class="p-5 font-black text-slate-800 text-xs">${getRoll(s)}</td>
-                    <td class="p-5 text-slate-600 text-xs truncate max-w-[120px]">${s['Full Name(English)'] || s.Name || s.name || '---'}</td>
+                    <td class="p-5 text-slate-600 text-xs truncate max-w-[120px]">${getValue(s, 'Full Name(English)') || getValue(s, 'Name') || '---'}</td>
                     <td class="p-5">
                         <span class="px-3 py-1 rounded-lg text-[8px] font-black tracking-widest ${!!s.updatedAt ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}">
                             ${!!s.updatedAt ? 'VERIFIED' : 'PENDING'}
@@ -652,7 +684,8 @@
                     if (updatedData) {
                         const newRow = [...row];
                         headers.forEach((header, colIdx) => {
-                            if (updatedData[header] !== undefined) { newRow[colIdx] = updatedData[header]; }
+                            const val = getValue(updatedData, header.toString());
+                            if (val !== undefined && val !== '') { newRow[colIdx] = val; }
                         });
                         return newRow;
                     }
@@ -678,13 +711,12 @@
             doc.setFontSize(12);
             doc.text("Pending Verification List", 105, 28, { align: "center" });
             
-            // Map table data to: S.L, Name, Room, Department, Semester
             const tableData = pending.map((s, i) => [
                 i + 1, 
-                s['Full Name(English)'] || s.Name || s.name || '---', 
+                getValue(s, 'Full Name(English)') || getValue(s, 'Name') || '---', 
                 getRoom(s) || '---',
-                s['Department '] || '---', 
-                s['Semester '] || s.Semester || '---'
+                getValue(s, 'Department ') || getValue(s, 'Department') || '---', 
+                getValue(s, 'Semester ') || getValue(s, 'Semester') || '---'
             ]);
 
             doc.autoTable({ 
@@ -776,4 +808,3 @@
     </script>
 </body>
 </html>
-
