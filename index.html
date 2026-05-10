@@ -166,7 +166,7 @@
                             <p id="msg-seat" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
                         </div>
                         <div class="md:col-span-2 space-y-2">
-                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Address(বাংলা)</label>
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Address (Bangla)</label>
                             <input type="text" id="f-address" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold" placeholder="গ্রাম, উপজেলা, জেলা">
                             <p id="msg-address" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
                         </div>
@@ -191,7 +191,7 @@
                     <h3 class="text-xl font-black text-slate-800">Roll Not Found</h3>
                     <p class="text-slate-500 max-w-xs mt-2 text-sm">Please ensure you entered the correct roll number.</p>
                     
-                    <div class="mt-8 p-6 bg-amber-50 rounded-3xl border border-amber-100 max-w-sm mx-auto">
+                    <div class="mt-8 p-6 bg-amber-50 rounded-3xl border border-amber-100 max-sm mx-auto">
                         <p class="text-amber-800 font-bold mb-4 tracking-tight">৩০৭ রুমে এসে যোগাযোগ কর</p>
                         <button onclick="openContactModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center mx-auto">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
@@ -202,7 +202,7 @@
             </div>
         </section>
 
-        <!-- Admin Panel Section -->
+        <!-- Admin Panel -->
         <section id="section-admin" class="hidden">
             <div class="bg-white rounded-[2.5rem] shadow-xl p-6 md:p-12 border border-slate-100 mobile-card">
                 <div id="admin-auth" class="max-w-md mx-auto space-y-6">
@@ -316,13 +316,6 @@
         </footer>
     </div>
 
-    <!-- Persistent Floating Contact Button -->
-    <div class="fixed bottom-6 right-6 z-[100]">
-        <button onclick="openContactModal()" class="float-btn bg-blue-600 text-white w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-2xl hover:bg-blue-700 transition-all active:scale-90 border-4 border-white">
-            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-        </button>
-    </div>
-
     <!-- Contact Info Modal -->
     <div id="contactModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-[300] p-4" onclick="closeContactModal(event)">
         <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200" onclick="event.stopPropagation()">
@@ -362,6 +355,13 @@
         </div>
     </div>
 
+    <!-- Persistent Floating Contact Button -->
+    <div class="fixed bottom-6 right-6 z-[100]">
+        <button onclick="openContactModal()" class="float-btn bg-blue-600 text-white w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-2xl hover:bg-blue-700 transition-all active:scale-90 border-4 border-white">
+            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+        </button>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-auto md:bottom-10 md:left-auto md:right-10 md:translate-x-0 md:translate-y-0 px-8 py-5 rounded-[2rem] shadow-2xl text-white font-black text-sm md:text-base transition-all duration-300 z-[500] flex items-center text-center max-w-[85vw] pointer-events-none opacity-0 scale-90">
         <span id="toastMsg" class="w-full"></span>
@@ -388,7 +388,7 @@
         const collectionPath = ['artifacts', appId, 'public', 'data', 'students'];
 
         let students = [];
-        let masterTemplateAOA = []; // To preserve blank rows
+        let masterTemplateAOA = [];
         let currentStudentIdx = -1;
         let rollColIdx = -1;
 
@@ -447,38 +447,28 @@
             if (!auth.currentUser) return;
             try {
                 let masterData = [];
-                // Reset template
                 masterTemplateAOA = [];
-
-                // 1. Fetch Local Excel base (if available)
                 try {
                     const response = await fetch('hostel-data.xlsx');
                     if (response.ok) {
                         const buffer = await response.arrayBuffer();
                         const workbook = XLSX.read(buffer, { type: 'array' });
                         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        
-                        // Capture entire grid including empty rows to preserve structure
                         masterTemplateAOA = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-                        
                         if (masterTemplateAOA.length > 0) {
                             const headers = masterTemplateAOA[0];
                             rollColIdx = headers.findIndex(h => h && h.toString().toLowerCase().replace(/\s/g, '') === 'roll');
-                            
-                            // Convert to student objects for the UI/logic
                             masterData = XLSX.utils.sheet_to_json(sheet);
                         }
                     }
-                } catch (e) { console.warn("Master file not found."); }
+                } catch (e) {}
 
-                // 2. Fetch Cloud Updates
                 let cloudUpdates = {};
                 try {
                     const snap = await getDocs(collection(db, ...collectionPath));
                     snap.forEach(d => { cloudUpdates[d.id] = d.data(); });
-                } catch (err) { console.error("Cloud Access Error:", err); }
+                } catch (err) {}
 
-                // 3. Merge
                 const registry = new Map();
                 masterData.forEach(row => {
                     const roll = getRoll(row);
@@ -499,9 +489,8 @@
                     updateFirebaseStatus('connecting', 'Ready for Import');
                 }
             } catch (err) {
-                console.error("CRITICAL SYNC ERROR:", err);
+                console.error("Sync Error:", err);
                 updateFirebaseStatus('error', 'Sync Failed');
-                showToast("Connection failed", true);
             }
         }
 
@@ -652,38 +641,28 @@
         window.exportExcel = async () => {
             showToast("Syncing data...");
             await loadAndMergeData();
-            
-            if (masterTemplateAOA.length === 0) return showToast("No template to export!", true);
-
-            // Reconstruct AOA using template and current student data
+            if (masterTemplateAOA.length === 0) return showToast("No template found!", true);
             const headers = masterTemplateAOA[0];
             const updatedAOA = masterTemplateAOA.map((row, rowIdx) => {
-                if (rowIdx === 0) return row; // Keep header as is
-
+                if (rowIdx === 0) return row;
                 const roll = row[rollColIdx];
                 if (roll) {
                     const rollStr = roll.toString().trim();
                     const updatedData = students.find(s => getRoll(s) === rollStr);
                     if (updatedData) {
-                        // Create a new array for this row to update cells
                         const newRow = [...row];
                         headers.forEach((header, colIdx) => {
-                            const headerNorm = header.toString();
-                            // Update specific fields from current state
-                            if (updatedData[headerNorm] !== undefined) {
-                                newRow[colIdx] = updatedData[headerNorm];
-                            }
+                            if (updatedData[header] !== undefined) { newRow[colIdx] = updatedData[header]; }
                         });
                         return newRow;
                     }
                 }
-                return row; // Keep original (including blanks) if no roll match
+                return row;
             });
-
             const ws = XLSX.utils.aoa_to_sheet(updatedAOA);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Students");
-            XLSX.writeFile(wb, `SMH_Full_Export_Preserved_${new Date().toLocaleDateString()}.xlsx`);
+            XLSX.writeFile(wb, `SMH_Full_Export_${new Date().toLocaleDateString()}.xlsx`);
             showToast("Excel Downloaded");
         };
 
@@ -698,8 +677,23 @@
             doc.text("SHAHEED MONAYEM HOSTEL", 105, 20, { align: "center" });
             doc.setFontSize(12);
             doc.text("Pending Verification List", 105, 28, { align: "center" });
-            const tableData = pending.map((s, i) => [i + 1, s['Full Name(English)'] || s.Name || s.name || '---', s['Department '] || '---', s['Semester '] || s.Semester || '---']);
-            doc.autoTable({ startY: 40, head: [['S.L', 'Name', 'Department', 'Semester']], body: tableData, theme: 'grid', styles: { fontSize: 8 } });
+            
+            // Map table data to: S.L, Name, Room, Department, Semester
+            const tableData = pending.map((s, i) => [
+                i + 1, 
+                s['Full Name(English)'] || s.Name || s.name || '---', 
+                getRoom(s) || '---',
+                s['Department '] || '---', 
+                s['Semester '] || s.Semester || '---'
+            ]);
+
+            doc.autoTable({ 
+                startY: 40, 
+                head: [['S.L', 'Name', 'Room', 'Department', 'Semester']], 
+                body: tableData, 
+                theme: 'grid', 
+                styles: { fontSize: 8 } 
+            });
             doc.save(`SMH_Pending_List_${new Date().toLocaleDateString()}.pdf`);
             showToast("PDF Downloaded 📄");
         };
@@ -711,12 +705,9 @@
             reader.onload = async (evt) => {
                 const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                
-                // Store template for preservation
                 masterTemplateAOA = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                 const headers = masterTemplateAOA[0];
                 rollColIdx = headers.findIndex(h => h && h.toString().toLowerCase().replace(/\s/g, '') === 'roll');
-
                 const rows = XLSX.utils.sheet_to_json(sheet);
                 showToast(`Cloud Uploading...`);
                 for (let s of rows) {
@@ -773,9 +764,16 @@
         }
 
         window.openSeatModal = () => document.getElementById('seatModal').classList.remove('hidden');
-        window.closeSeatModal = () => document.getElementById('seatModal').classList.add('hidden');
+        window.closeSeatModal = (e) => {
+            const modal = document.getElementById('seatModal');
+            if (modal) { if (e && e.target.id !== 'seatModal' && e.type === 'click') return; modal.classList.add('hidden'); }
+        };
         window.openContactModal = () => document.getElementById('contactModal').classList.remove('hidden');
-        window.closeContactModal = () => document.getElementById('contactModal').classList.add('hidden');
+        window.closeContactModal = (e) => {
+            const modal = document.getElementById('contactModal');
+            if (modal) { if (e && e.target.id !== 'contactModal' && e.type === 'click') return; modal.classList.add('hidden'); }
+        };
     </script>
 </body>
 </html>
+
