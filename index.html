@@ -113,6 +113,7 @@
                     </button>
                 </div>
 
+                <!-- Profile Form -->
                 <div id="studentForm" class="hidden space-y-10 animate-in slide-in-from-bottom-4 duration-500">
                     <div class="flex justify-between items-center px-2">
                         <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Verification Status</h3>
@@ -165,7 +166,7 @@
                             <p id="msg-seat" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
                         </div>
                         <div class="md:col-span-2 space-y-2">
-                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Address (Bangla)</label>
+                            <label class="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em] ml-1">Address(বাংলা)</label>
                             <input type="text" id="f-address" class="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-semibold" placeholder="গ্রাম, উপজেলা, জেলা">
                             <p id="msg-address" class="text-[10px] text-red-500 hidden font-black mt-1 uppercase tracking-wider">Required Field</p>
                         </div>
@@ -387,7 +388,9 @@
         const collectionPath = ['artifacts', appId, 'public', 'data', 'students'];
 
         let students = [];
+        let masterTemplateAOA = []; // To preserve blank rows
         let currentStudentIdx = -1;
+        let rollColIdx = -1;
 
         // Countdown Logic
         const deadline = new Date("2026-05-11T04:00:00").getTime();
@@ -403,10 +406,14 @@
             const hours = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const mins = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
             const secs = Math.floor((t % (1000 * 60)) / 1000);
-            document.getElementById("days").innerText = days.toString().padStart(2, '0');
-            document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
-            document.getElementById("minutes").innerText = mins.toString().padStart(2, '0');
-            document.getElementById("seconds").innerText = secs.toString().padStart(2, '0');
+            const dEl = document.getElementById("days");
+            const hEl = document.getElementById("hours");
+            const mEl = document.getElementById("minutes");
+            const sEl = document.getElementById("seconds");
+            if (dEl) dEl.innerText = days.toString().padStart(2, '0');
+            if (hEl) hEl.innerText = hours.toString().padStart(2, '0');
+            if (mEl) mEl.innerText = mins.toString().padStart(2, '0');
+            if (sEl) sEl.innerText = secs.toString().padStart(2, '0');
         }
         setInterval(updateCountdown, 1000);
         updateCountdown();
@@ -440,21 +447,38 @@
             if (!auth.currentUser) return;
             try {
                 let masterData = [];
+                // Reset template
+                masterTemplateAOA = [];
+
+                // 1. Fetch Local Excel base (if available)
                 try {
                     const response = await fetch('hostel-data.xlsx');
                     if (response.ok) {
                         const buffer = await response.arrayBuffer();
                         const workbook = XLSX.read(buffer, { type: 'array' });
-                        masterData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        
+                        // Capture entire grid including empty rows to preserve structure
+                        masterTemplateAOA = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                        
+                        if (masterTemplateAOA.length > 0) {
+                            const headers = masterTemplateAOA[0];
+                            rollColIdx = headers.findIndex(h => h && h.toString().toLowerCase().replace(/\s/g, '') === 'roll');
+                            
+                            // Convert to student objects for the UI/logic
+                            masterData = XLSX.utils.sheet_to_json(sheet);
+                        }
                     }
-                } catch (e) {}
+                } catch (e) { console.warn("Master file not found."); }
 
+                // 2. Fetch Cloud Updates
                 let cloudUpdates = {};
                 try {
                     const snap = await getDocs(collection(db, ...collectionPath));
                     snap.forEach(d => { cloudUpdates[d.id] = d.data(); });
-                } catch (err) {}
+                } catch (err) { console.error("Cloud Access Error:", err); }
 
+                // 3. Merge
                 const registry = new Map();
                 masterData.forEach(row => {
                     const roll = getRoll(row);
@@ -600,12 +624,12 @@
             const statPending = document.getElementById('stat-pending');
 
             const total = students.length;
-            const verified = students.filter(s => !!s.updatedAt).length;
-            const pending = total - verified;
+            const verifiedCount = students.filter(s => !!s.updatedAt).length;
+            const pendingCount = total - verifiedCount;
 
             if (statTotal) statTotal.innerText = total;
-            if (statVerified) statVerified.innerText = verified;
-            if (statPending) statPending.innerText = pending;
+            if (statVerified) statVerified.innerText = verifiedCount;
+            if (statPending) statPending.innerText = pendingCount;
             if (totalLabel) totalLabel.innerText = total;
 
             if (total === 0) {
@@ -628,11 +652,38 @@
         window.exportExcel = async () => {
             showToast("Syncing data...");
             await loadAndMergeData();
-            const cleanData = students.map(({updatedAt, ...rest}) => rest);
-            const ws = XLSX.utils.json_to_sheet(cleanData);
+            
+            if (masterTemplateAOA.length === 0) return showToast("No template to export!", true);
+
+            // Reconstruct AOA using template and current student data
+            const headers = masterTemplateAOA[0];
+            const updatedAOA = masterTemplateAOA.map((row, rowIdx) => {
+                if (rowIdx === 0) return row; // Keep header as is
+
+                const roll = row[rollColIdx];
+                if (roll) {
+                    const rollStr = roll.toString().trim();
+                    const updatedData = students.find(s => getRoll(s) === rollStr);
+                    if (updatedData) {
+                        // Create a new array for this row to update cells
+                        const newRow = [...row];
+                        headers.forEach((header, colIdx) => {
+                            const headerNorm = header.toString();
+                            // Update specific fields from current state
+                            if (updatedData[headerNorm] !== undefined) {
+                                newRow[colIdx] = updatedData[headerNorm];
+                            }
+                        });
+                        return newRow;
+                    }
+                }
+                return row; // Keep original (including blanks) if no roll match
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(updatedAOA);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Students");
-            XLSX.writeFile(wb, `SMH_Full_Export_${new Date().toLocaleDateString()}.xlsx`);
+            XLSX.writeFile(wb, `SMH_Full_Export_Preserved_${new Date().toLocaleDateString()}.xlsx`);
             showToast("Excel Downloaded");
         };
 
@@ -659,7 +710,14 @@
             const reader = new FileReader();
             reader.onload = async (evt) => {
                 const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                
+                // Store template for preservation
+                masterTemplateAOA = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                const headers = masterTemplateAOA[0];
+                rollColIdx = headers.findIndex(h => h && h.toString().toLowerCase().replace(/\s/g, '') === 'roll');
+
+                const rows = XLSX.utils.sheet_to_json(sheet);
                 showToast(`Cloud Uploading...`);
                 for (let s of rows) {
                     const roll = getRoll(s);
@@ -684,11 +742,10 @@
             const toast = document.getElementById('toast');
             if (!toast) return;
             document.getElementById('toastMsg').textContent = msg;
-            toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-auto md:bottom-10 md:left-auto md:right-10 md:translate-x-0 md:translate-y-0 px-8 py-5 rounded-[2rem] shadow-2xl text-white font-black text-sm md:text-base transition-all duration-300 z-[500] flex items-center text-center max-w-[85vw] pointer-events-auto opacity-100 scale-100 ${isError ? 'bg-red-500' : 'bg-blue-600'}`;
+            toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-auto md:bottom-10 md:left-auto md:right-10 md:translate-x-0 md:translate-y-0 px-8 py-5 rounded-[2rem] shadow-2xl text-white font-black text-sm md:text-base transition-all duration-300 z-[500] flex items-center text-center max-w-[85vw] opacity-100 scale-100 ${isError ? 'bg-red-500' : 'bg-blue-600'}`;
             setTimeout(() => { 
                 toast.classList.remove('opacity-100', 'scale-100');
                 toast.classList.add('opacity-0', 'scale-90');
-                toast.classList.add('pointer-events-none');
             }, 3000);
         };
 
@@ -716,15 +773,9 @@
         }
 
         window.openSeatModal = () => document.getElementById('seatModal').classList.remove('hidden');
-        window.closeSeatModal = (e) => {
-            const modal = document.getElementById('seatModal');
-            if (modal) { if (e && e.target.id !== 'seatModal' && e.type === 'click') return; modal.classList.add('hidden'); }
-        };
+        window.closeSeatModal = () => document.getElementById('seatModal').classList.add('hidden');
         window.openContactModal = () => document.getElementById('contactModal').classList.remove('hidden');
-        window.closeContactModal = (e) => {
-            const modal = document.getElementById('contactModal');
-            if (modal) { if (e && e.target.id !== 'contactModal' && e.type === 'click') return; modal.classList.add('hidden'); }
-        };
+        window.closeContactModal = () => document.getElementById('contactModal').classList.add('hidden');
     </script>
 </body>
 </html>
