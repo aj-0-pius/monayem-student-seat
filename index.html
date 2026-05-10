@@ -239,7 +239,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="p-8 bg-blue-50 rounded-[2rem] border border-blue-100 shadow-sm text-center">
                             <h3 class="font-black text-blue-900 mb-2 text-xs uppercase tracking-[0.2em]">Import Hub</h3>
-                            <p class="text-xs text-blue-600 mb-6 font-medium">Replace cloud database with a fresh master file.</p>
+                            <p class="text-xs text-blue-600 mb-6 font-medium">Reset cloud database with a fresh master file.</p>
                             <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
                             <label for="excelInput" class="inline-block w-full py-3 px-4 bg-white border-2 border-dashed border-blue-200 rounded-xl cursor-pointer hover:border-blue-400 transition-all active:scale-95 shadow-sm">
                                 <span class="text-blue-600 font-black text-[10px] uppercase tracking-widest">Select Excel File</span>
@@ -445,7 +445,6 @@
             });
         };
 
-        // Helper to get value from a student object ignoring header spaces/casing
         function getValue(student, fieldName) {
             if (!student) return '';
             const cleanFieldName = fieldName.toLowerCase().trim();
@@ -487,7 +486,6 @@
 
                 Object.keys(cloudUpdates).forEach(roll => {
                     const existing = registry.get(roll) || {};
-                    // Merge: Cloud "Truth" on top of Excel foundation
                     registry.set(roll, { ...existing, ...cloudUpdates[roll] });
                 });
 
@@ -525,6 +523,15 @@
             return '';
         }
 
+        function checkStudentVerification(s) {
+            const requiredFields = ['Gurdian phone No ', 'Registration No', 'Seat No', 'Address', 'Email'];
+            const hasAll = requiredFields.every(k => {
+                const val = getValue(s, k);
+                return val && val.toString().trim() !== '';
+            });
+            return !!s.updatedAt || hasAll;
+        }
+
         window.searchStudent = () => {
             const roll = document.getElementById('rollSearch').value.trim();
             if (!roll) return showToast("Enter roll number", true);
@@ -552,7 +559,7 @@
                     email: 'Email' 
                 };
 
-                const isVerified = !!s.updatedAt;
+                const isVerified = checkStudentVerification(s);
 
                 Object.keys(keysMapping).forEach(k => {
                     const field = document.getElementById(`f-${k}`);
@@ -589,7 +596,7 @@
         window.saveStudentData = async () => {
             if (currentStudentIdx === -1 || !auth.currentUser) return;
             const s = students[currentStudentIdx];
-            if (s.updatedAt) return showToast("Data already verified", true);
+            if (checkStudentVerification(s)) return showToast("Data already verified", true);
             const btn = document.getElementById('saveBtn');
             btn.disabled = true;
             btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...`;
@@ -645,7 +652,7 @@
             const statPending = document.getElementById('stat-pending');
 
             const total = students.length;
-            const verifiedCount = students.filter(s => !!s.updatedAt).length;
+            const verifiedCount = students.filter(s => checkStudentVerification(s)).length;
             const pendingCount = total - verifiedCount;
 
             if (statTotal) statTotal.innerText = total;
@@ -663,8 +670,8 @@
                     <td class="p-5 font-black text-slate-800 text-xs">${getRoll(s)}</td>
                     <td class="p-5 text-slate-600 text-xs truncate max-w-[120px]">${getValue(s, 'Full Name(English)') || getValue(s, 'Name') || '---'}</td>
                     <td class="p-5">
-                        <span class="px-3 py-1 rounded-lg text-[8px] font-black tracking-widest ${!!s.updatedAt ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}">
-                            ${!!s.updatedAt ? 'VERIFIED' : 'PENDING'}
+                        <span class="px-3 py-1 rounded-lg text-[8px] font-black tracking-widest ${checkStudentVerification(s) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}">
+                            ${checkStudentVerification(s) ? 'VERIFIED' : 'PENDING'}
                         </span>
                     </td>
                 </tr>`).join('');
@@ -703,7 +710,7 @@
             const { jsPDF } = window.jspdf;
             showToast("Generating Pending List...");
             await loadAndMergeData();
-            const pending = students.filter(s => !s.updatedAt);
+            const pending = students.filter(s => !checkStudentVerification(s));
             if (pending.length === 0) return showToast("No pending records!", true);
             const doc = new jsPDF();
             doc.setFontSize(18);
@@ -769,6 +776,7 @@
             setTimeout(() => { 
                 toast.classList.remove('opacity-100', 'scale-100');
                 toast.classList.add('opacity-0', 'scale-90');
+                toast.classList.add('pointer-events-none');
             }, 3000);
         };
 
