@@ -377,15 +377,15 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'hostel-portal-v2';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyCZ7WGTBA9lAYkRX8jCKn6LewCR9l_y8bg",
-            authDomain: "hostel-data-update.firebaseapp.com",
-            projectId: "hostel-data-update",
-            storageBucket: "hostel-data-update.firebasestorage.app",
-            messagingSenderId: "174592340879",
-            appId: "1:174592340879:web:f9575eca718016348d91fa"
+            apiKey: "API-Key",
+            authDomain: "projectName"'.firebaseapp.com",
+            projectId: "ProjectID",
+            storageBucket: "ProjectID.firebasestorage.app",
+            messagingSenderId: "",
+            appId: ""
         };
 
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(firebaseConfig); 
         const db = getFirestore(app);
         const auth = getAuth(app);
         const collectionPath = ['artifacts', appId, 'public', 'data', 'students'];
