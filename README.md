@@ -1,1 +1,98 @@
-SHAHEED MONAYEM HOSTEL - Portal (Demo)A responsive, single-file web application designed for student data verification and hostel management. This project serves as a standalone demo of a system originally built for data collection with Firebase integration.🚀 OverviewThe Shaheed Monayem Hostel Portal allows students to verify their personal and hostel-related information by searching for their Polytechnic Roll Number. It includes a secure Administrator Panel for tracking registration progress, viewing real-time statistics, and exporting reports in Excel and PDF formats.🛠️ Technologies UsedFrontend: HTML5, CSS3 (Tailwind CSS), JavaScript (Vanilla)Data Handling: SheetJS (XLSX)PDF Generation: jsPDF & jsPDF-AutoTableIcons: Inline SVGsTypography: Inter (Google Fonts)📱 Demo AccessSince this is a standalone demo, the data is held in the application's local memory.Active Test RollsYou can use the following roll numbers to test the verification logic:819494 (Pending info)721500 (Pending info)820162 (Pre-verified/Masked info)Admin PanelLogin PIN: 1234✨ Key Features1. Student Verification PortalRoll Search: Students can retrieve their records instantly.Smart Field Locking: Existing data in the system is automatically locked (read-only) to ensure data integrity. Only missing fields are open for input.Auto-Verification: Once all required fields (Registration, Phone Numbers, Address, Email, Seat No) are filled and saved, the student is marked as "Verified."Seat Map: An interactive reference map available directly from the seat selection field.2. Administrator DashboardReal-time Analytics: Visual cards showing Total Registered, Verified, and Pending counts.Database Snapshot: A comprehensive table showing student rolls, names, room numbers, and current status.Export Tools:Download Excel: Generates a full .xlsx spreadsheet of all records.Download Pending List: Generates a formatted .pdf report specifically for students who haven't completed verification.3. Responsive & Interactive DesignMobile First: Optimized for Android browsers and small screens.Deadline Countdown: A dynamic timer set to a specific submission deadline to create urgency.Floating Help Desk: A persistent contact button providing administrative guidance (Room 307) and a direct Facebook contact link.📂 File StructureThis application follows the Single-File Mandate, meaning all logic, styling, and structure reside in:index.html: The main application file.Required Assets:logo.jpg: Displayed in the header and as the browser favicon.1.jpg: The seat reference map shown in the modal.📝 Usage NoteThis version is a local demo. Data saved during a session is stored in the browser's temporary memory and will reset upon a page refresh. For live production use, the system is designed to be re-connected to a cloud database (Firebase Firestore).
+@ -1,97 +1 @@
+# Student Portal
+
+A web-based student information portal with Firebase backend for data persistence.
+
+## Features
+- Student data search and update
+- Seat reference guide
+- Admin panel for data management
+- Firebase cloud database integration
+- Excel import/export functionality
+
+## Setup Instructions
+
+### 1. Firebase Setup
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project
+3. Enable Firestore Database
+4. Go to Project Settings > General > Your apps
+5. Add a web app and copy the Firebase config
+6. Replace the config in `index.html` with your actual values
+
+### 2. Firebase Config
+✅ **Already configured** with your Firebase project settings. No changes needed.
+
+Your Firebase project: `hostel-data-update`
+
+### 3. Deploy to GitHub Pages
+1. Push this code to a GitHub repository
+2. Go to repository Settings > Pages
+3. Select "Deploy from a branch" and choose main/master
+4. The site will be live at: `https://yourusername.github.io/repository-name`
+
+### 4. Initial Data Setup
+- Use the Admin panel to import student data from Excel
+- Or manually add students through the interface
+- All data is automatically saved to Firebase
+
+## Security Rules
+
+### Firestore Security Rules (IMPORTANT!)
+Your current rules allow anyone to read/write data. **This is dangerous!**
+
+**Replace your current rules with this secure version:**
+
+``
+```
+
+**🔧 TEMPORARY TESTING RULES (Use this first to test if Firebase works):**
+
+⚠️ **Use the testing rules temporarily, then switch to secure ones after confirming Firebase works**
+
+**To update rules:**
+1. Go to Firebase Console → Firestore Database → Rules
+2. Replace the existing code with the secure rules above
+3. Click "Publish"
+
+### Testing Security:
+After updating rules, test them:
+1. Open your website
+2. Open browser console (F12)
+3. Run: `testFirebaseSecurity()`
+4. Should show: "✅ Security working: Invalid write blocked"
+
+### Option 2: Maximum Security (Requires Authentication)
+
+If you want full security, enable Firebase Authentication:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /students/{studentId} {
+      // Only authenticated users can read/write
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
+
+**But this requires:**
+- Adding Firebase Auth to your website
+- Students need to create accounts
+- More complex user experience
+
+---
+
+### Current Risk Assessment:
+- **High Risk**: Public read/write allows data theft
+- **Medium Risk**: Current rules allow viewing all data
+- **Low Risk**: Secure rules prevent unauthorized changes
+
+**Recommendation**: Use the secure rules I provided above. They balance security with usability.
+
+## Files
+- `index.html` - Main application
+- `1.jpg` - Seat reference image
+- `.gitignore` - Excludes sensitive files
